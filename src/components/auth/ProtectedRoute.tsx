@@ -1,29 +1,25 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+
+type UserType = 'veteran' | 'employer';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  isAuthenticated: boolean;
-  userType?: 'veteran' | 'employer';
-  requiredUserType?: 'veteran' | 'employer';
+  userType: UserType;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-  isAuthenticated,
-  userType,
-  requiredUserType
-}) => {
-  const location = useLocation();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, userType }) => {
+  // For now, we'll just check if the user is logged in
+  // In a real app, you would check against your auth state
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const currentUserType = localStorage.getItem('userType') as UserType;
 
   if (!isAuthenticated) {
-    // Redirect to login page if not authenticated
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
-  if (requiredUserType && userType !== requiredUserType) {
-    // Redirect to appropriate dashboard if user type doesn't match
-    return <Navigate to={`/${userType}/dashboard`} replace />;
+  if (currentUserType !== userType) {
+    return <Navigate to={currentUserType === 'veteran' ? '/veteran' : '/employer'} replace />;
   }
 
   return <>{children}</>;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 
 interface RegisterFormData {
@@ -16,7 +17,12 @@ interface RegisterFormData {
   position?: string;
 }
 
-const Register: React.FC = () => {
+interface RegisterProps {
+  onLogin: (type: 'veteran' | 'employer') => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
     email: '',
@@ -36,7 +42,8 @@ const Register: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle registration logic
-    console.log(formData);
+    onLogin(formData.userType);
+    navigate(formData.userType === 'veteran' ? '/veteran' : '/employer/dashboard');
   };
 
   return (

@@ -4,10 +4,24 @@ import { Briefcase, Users, CheckCircle } from 'lucide-react';
 interface VeteranProfile {
   id: number;
   name: string;
-  role: string;
-  branch: string;
+  rank: string;
   service: string;
-  matchScore: number;
+  yearsOfService: number;
+  skills: string[];
+  experience: string;
+  education: string;
+  certifications: string[];
+  interests: string[];
+  location: string;
+  availability: string;
+  preferredRoles: string[];
+  languages: string[];
+  achievements: string[];
+  contact: {
+    email: string;
+    phone: string;
+    linkedin: string;
+  };
 }
 
 interface EmployerDashboardProps {
@@ -52,16 +66,15 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = ({ veteranProfiles }
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Recent Applications</h3>
           <div className="space-y-4">
-            {veteranProfiles.map((veteran) => (
-              <div key={veteran.id} className="border border-gray-200 rounded-lg p-4">
+            {veteranProfiles.map((profile) => (
+              <div key={profile.id} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <h4 className="font-semibold text-gray-800">{veteran.name}</h4>
-                    <p className="text-gray-600">{veteran.role}, {veteran.branch}</p>
-                    <p className="text-sm text-gray-500">{veteran.service} experience</p>
+                    <h4 className="font-semibold text-gray-800">{profile.name}</h4>
+                    <p className="text-gray-600">{profile.rank} - {profile.service}</p>
                   </div>
                   <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                    {veteran.matchScore}% Match
+                    {profile.skills.length} Skills
                   </span>
                 </div>
                 <div className="flex space-x-2">

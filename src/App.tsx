@@ -1,199 +1,251 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import EmployerDashboard from './components/employer/Dashboard';
 import PostJob from './components/employer/PostJob';
+import Dashboard from './components/employer/Dashboard';
 import Analytics from './components/employer/Analytics';
-import Profile from './components/veteran/Profile';
 import JobMatches from './components/veteran/JobMatches';
 import LearningHub from './components/veteran/LearningHub';
 import Mentorship from './components/veteran/Mentorship';
-
-// Type definitions
-type UserType = 'veteran' | 'employer';
-
-interface VeteranProfile {
-  id: number;
-  name: string;
-  role: string;
-  branch: string;
-  service: string;
-  matchScore: number;
-  skills: string[];
-  physicalStatus: string;
-  education: string;
-  location: string;
-}
+import Profile from './components/veteran/Profile';
+import VeteranPlatform from './components/veteran/VeteranPlatform';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Mock data
-const mockVeteranProfiles: VeteranProfile[] = [
+const mockVeteranProfiles = [
   {
     id: 1,
     name: 'John Doe',
-    role: 'Captain',
-    branch: 'Indian Army',
-    service: '15 years',
-    matchScore: 85,
-    skills: ['Leadership', 'Project Management', 'Team Building'],
-    physicalStatus: 'Fit for Service',
+    rank: 'Major',
+    service: 'Indian Army',
+    yearsOfService: 15,
+    skills: ['Leadership', 'Project Management', 'Strategic Planning'],
+    experience: 'Extensive experience in military operations and team leadership.',
     education: 'B.Tech in Computer Science',
-    location: 'Delhi'
+    certifications: ['PMP', 'ITIL'],
+    interests: ['Technology', 'Management', 'Consulting'],
+    location: 'Delhi',
+    availability: 'Immediate',
+    preferredRoles: ['Project Manager', 'Operations Manager', 'Consultant'],
+    languages: ['English', 'Hindi'],
+    achievements: ['Distinguished Service Medal', 'Leadership Excellence Award'],
+    contact: {
+      email: 'john.doe@example.com',
+      phone: '+91 9876543210',
+      linkedin: 'linkedin.com/in/johndoe'
+    }
   },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    role: 'Major',
-    branch: 'Indian Air Force',
-    service: '12 years',
-    matchScore: 92,
-    skills: ['Aviation', 'Strategic Planning', 'Crisis Management'],
-    physicalStatus: 'Fit for Service',
-    education: 'Masters in Aeronautical Engineering',
-    location: 'Mumbai'
-  }
+  // Add more mock profiles as needed
 ];
 
 const mockJobListings = [
   {
     id: 1,
     title: 'Project Manager',
-    company: 'Tech Solutions',
-    location: 'Delhi',
+    company: 'Tech Solutions India',
+    location: 'Bangalore',
     type: 'Full-time',
-    requirements: ['Leadership', 'Project Management', 'Agile'],
-    salary: '₹15-20 LPA',
-    match: 85
+    requirements: [
+      '5+ years of project management experience',
+      'PMP certification preferred',
+      'Strong leadership skills'
+    ],
+    salary: '₹15L - ₹25L per annum',
+    description: 'We are looking for an experienced Project Manager to lead our technology initiatives...',
+    postedDate: '2024-02-15',
+    deadline: '2024-03-15',
+    status: 'Open',
+    applications: 25,
+    matches: 8
   },
-  {
-    id: 2,
-    title: 'Security Consultant',
-    company: 'Global Security',
-    location: 'Mumbai',
-    type: 'Contract',
-    requirements: ['Risk Assessment', 'Security Planning', 'Team Leadership'],
-    salary: '₹12-15 LPA',
-    match: 92
-  }
+  // Add more mock job listings as needed
 ];
 
 const mockCourses = [
   {
     id: 1,
-    title: 'Project Management Professional',
-    duration: '6 months',
-    level: 'Advanced',
-    category: 'Management',
-    recommended: true
-  },
-  {
-    id: 2,
-    title: 'Cybersecurity Fundamentals',
+    title: 'Project Management Professional (PMP)',
+    provider: 'PMI India',
     duration: '3 months',
-    level: 'Intermediate',
-    category: 'Technical',
-    recommended: false
-  }
+    level: 'Advanced',
+    format: 'Online',
+    cost: '₹45,000',
+    description: 'Comprehensive PMP certification course covering all aspects of project management...',
+    startDate: '2024-03-01',
+    endDate: '2024-05-31',
+    enrollmentDeadline: '2024-02-28',
+    prerequisites: ['Bachelor\'s degree', '3 years of project management experience'],
+    curriculum: [
+      'Project Integration Management',
+      'Project Scope Management',
+      'Project Schedule Management',
+      'Project Cost Management',
+      'Project Quality Management',
+      'Project Resource Management',
+      'Project Communications Management',
+      'Project Risk Management',
+      'Project Procurement Management',
+      'Project Stakeholder Management'
+    ],
+    instructors: [
+      {
+        name: 'Dr. Rajesh Kumar',
+        credentials: 'PMP, PhD in Management',
+        experience: '20+ years in project management'
+      }
+    ],
+    certification: 'PMP Certification',
+    support: [
+      '24/7 online support',
+      'Practice exams',
+      'Study materials',
+      'One-on-one mentoring'
+    ]
+  },
+  // Add more mock courses as needed
 ];
 
 const mockMentors = [
   {
-    name: 'Col. Rajesh Kumar',
-    field: 'Defense Technology',
-    company: 'Defense Tech Solutions',
-    experience: '25 years'
+    id: 1,
+    name: 'Colonel (Retd) Rajesh Singh',
+    service: 'Indian Army',
+    yearsOfService: 25,
+    currentRole: 'Senior Consultant at Deloitte',
+    expertise: ['Leadership', 'Strategy', 'Change Management'],
+    availability: 'Weekends',
+    rating: 4.8,
+    reviews: 45,
+    mentees: 12,
+    successRate: '92%',
+    bio: 'Retired Colonel with extensive experience in military leadership and corporate consulting...',
+    achievements: [
+      'Distinguished Service Medal',
+      'Leadership Excellence Award',
+      'Best Mentor Award 2023'
+    ],
+    specialties: [
+      'Career Transition',
+      'Leadership Development',
+      'Strategic Planning',
+      'Team Building'
+    ],
+    education: [
+      'Masters in Strategic Studies',
+      'MBA in Leadership',
+      'Certified Executive Coach'
+    ],
+    languages: ['English', 'Hindi', 'Punjabi'],
+    location: 'Delhi',
+    preferredIndustries: [
+      'Consulting',
+      'Defense',
+      'Technology',
+      'Manufacturing'
+    ],
+    mentoringStyle: 'Structured yet flexible, focusing on practical application',
+    sessionFormat: [
+      'One-on-one meetings',
+      'Group workshops',
+      'Online sessions',
+      'Field visits'
+    ],
+    commitment: '6 months minimum',
+    testimonials: [
+      {
+        name: 'Captain (Retd) Priya Sharma',
+        role: 'Project Manager at TCS',
+        text: 'Colonel Singh\'s guidance was instrumental in my successful transition to corporate life...'
+      }
+    ]
   },
-  {
-    name: 'Maj. Priya Singh',
-    field: 'Cybersecurity',
-    company: 'Secure Systems',
-    experience: '15 years'
-  }
+  // Add more mock mentors as needed
 ];
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [userType, setUserType] = useState<UserType>('veteran');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userType, setUserType] = useState<'veteran' | 'employer'>('veteran');
+
+  useEffect(() => {
+    const auth = localStorage.getItem('isAuthenticated');
+    const type = localStorage.getItem('userType') as 'veteran' | 'employer';
+    if (auth === 'true' && type) {
+      setIsAuthenticated(true);
+      setUserType(type);
+    }
+  }, []);
+
+  const handleLogin = (type: 'veteran' | 'employer') => {
+    setIsAuthenticated(true);
+    setUserType(type);
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userType', type);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userType');
+  };
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} userType={userType} setUserType={setUserType} />
-        
+      <div className="min-h-screen bg-gray-50">
+        <Navbar userType={userType} setUserType={setUserType} onLogout={handleLogout} />
         <main className="container mx-auto px-4 py-8">
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={
+              !isAuthenticated ? (
+                <Login onLogin={handleLogin} />
+              ) : (
+                <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
+              )
+            } />
+            <Route path="/register" element={
+              !isAuthenticated ? (
+                <Register onLogin={handleLogin} />
+              ) : (
+                <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
+              )
+            } />
             
-            {/* Veteran Routes */}
-            <Route
-              path="/veteran/dashboard"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="veteran">
-                  <Profile veteran={mockVeteranProfiles[0]} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/veteran/jobs"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="veteran">
-                  <JobMatches jobListings={mockJobListings} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/veteran/learning"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="veteran">
-                  <LearningHub courses={mockCourses} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/veteran/mentorship"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="veteran">
-                  <Mentorship mentors={mockMentors} />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Employer Routes */}
-            <Route
-              path="/employer/dashboard"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="employer">
-                  <EmployerDashboard veteranProfiles={mockVeteranProfiles} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/employer/post-job"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="employer">
-                  <PostJob />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/employer/analytics"
-              element={
-                <ProtectedRoute isAuthenticated={isAuthenticated} userType={userType} requiredUserType="employer">
-                  <Analytics />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Default Route */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            {/* Protected routes for veterans */}
+            <Route path="/veteran" element={
+              <ProtectedRoute userType="veteran">
+                <VeteranPlatform />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected routes for employers */}
+            <Route path="/employer/dashboard" element={
+              <ProtectedRoute userType="employer">
+                <Dashboard veteranProfiles={mockVeteranProfiles} />
+              </ProtectedRoute>
+            } />
+            <Route path="/employer/analytics" element={
+              <ProtectedRoute userType="employer">
+                <Analytics />
+              </ProtectedRoute>
+            } />
+            <Route path="/employer/post-job" element={
+              <ProtectedRoute userType="employer">
+                <PostJob />
+              </ProtectedRoute>
+            } />
+            
+            {/* Redirect root to appropriate dashboard */}
+            <Route path="/" element={
+              isAuthenticated ? (
+                <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            } />
           </Routes>
         </main>
-
         <Footer />
       </div>
     </Router>

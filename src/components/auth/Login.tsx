@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
-import { Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface LoginFormData {
-  email: string;
-  password: string;
-  userType: 'veteran' | 'employer';
+interface LoginProps {
+  onLogin: (userType: 'veteran' | 'employer') => void;
 }
 
-const Login: React.FC = () => {
-  const [formData, setFormData] = useState<LoginFormData>({
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
     email: '',
     password: '',
-    userType: 'veteran'
+    userType: 'veteran' as 'veteran' | 'employer'
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you would validate credentials with your backend
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userType', formData.userType);
+    onLogin(formData.userType);
+    navigate(formData.userType === 'veteran' ? '/veteran' : '/employer');
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -22,42 +30,16 @@ const Login: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login logic
-    console.log(formData);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="flex justify-center">
-            <Shield className="h-12 w-12 text-green-600" />
-          </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome to VetConnect
+            Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to access your account
-          </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="userType" className="sr-only">User Type</label>
-              <select
-                id="userType"
-                name="userType"
-                value={formData.userType}
-                onChange={handleInputChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-              >
-                <option value="veteran">Veteran</option>
-                <option value="employer">Employer</option>
-              </select>
-            </div>
             <div>
               <label htmlFor="email" className="sr-only">Email address</label>
               <input
@@ -65,10 +47,10 @@ const Login: React.FC = () => {
                 name="email"
                 type="email"
                 required
-                value={formData.email}
-                onChange={handleInputChange}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
               />
             </div>
             <div>
@@ -78,32 +60,27 @@ const Login: React.FC = () => {
                 name="password"
                 type="password"
                 required
-                value={formData.password}
-                onChange={handleInputChange}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-green-600 hover:text-green-500">
-                Forgot your password?
-              </a>
-            </div>
+          <div>
+            <label htmlFor="userType" className="sr-only">User Type</label>
+            <select
+              id="userType"
+              name="userType"
+              required
+              className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+              value={formData.userType}
+              onChange={handleChange}
+            >
+              <option value="veteran">Veteran</option>
+              <option value="employer">Employer</option>
+            </select>
           </div>
 
           <div>
@@ -115,15 +92,6 @@ const Login: React.FC = () => {
             </button>
           </div>
         </form>
-
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <a href="#" className="font-medium text-green-600 hover:text-green-500">
-              Register here
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );

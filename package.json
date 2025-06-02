@@ -7,7 +7,11 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "axios": "^1.6.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.294.0",
+    "mongoose": "^8.15.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
@@ -19,7 +23,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "seed": "ts-node src/scripts/seedDatabase.ts"
   },
   "eslintConfig": {
     "extends": [
@@ -41,6 +46,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.4"
+    "postcss": "^8.5.4",
+    "ts-node": "^10.9.2"
   }
 }
