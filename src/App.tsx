@@ -1,27 +1,47 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from '../components/common/Navbar';
-import Footer from '../components/common/Footer';
-import Login from '../components/auth/Login';
-import Register from '../components/auth/Register';
-import ProtectedRoute from '../components/auth/ProtectedRoute';
-import EmployerDashboard from '../components/employer/Dashboard';
-import PostJob from '../components/employer/PostJob';
-import Analytics from '../components/employer/Analytics';
-import Profile from '../components/veteran/Profile';
-import JobMatches from '../components/veteran/JobMatches';
-import LearningHub from '../components/veteran/LearningHub';
-import Mentorship from '../components/veteran/Mentorship';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import EmployerDashboard from './components/employer/Dashboard';
+import PostJob from './components/employer/PostJob';
+import Analytics from './components/employer/Analytics';
+import Profile from './components/veteran/Profile';
+import JobMatches from './components/veteran/JobMatches';
+import LearningHub from './components/veteran/LearningHub';
+import Mentorship from './components/veteran/Mentorship';
+
+// Type definitions
+type UserType = 'veteran' | 'employer';
+
+interface VeteranProfile {
+  id: number;
+  name: string;
+  role: string;
+  branch: string;
+  service: string;
+  matchScore: number;
+  skills: string[];
+  physicalStatus: string;
+  education: string;
+  location: string;
+}
 
 // Mock data
-const mockVeteranProfiles = [
+const mockVeteranProfiles: VeteranProfile[] = [
   {
     id: 1,
     name: 'John Doe',
     role: 'Captain',
     branch: 'Indian Army',
     service: '15 years',
-    matchScore: 85
+    matchScore: 85,
+    skills: ['Leadership', 'Project Management', 'Team Building'],
+    physicalStatus: 'Fit for Service',
+    education: 'B.Tech in Computer Science',
+    location: 'Delhi'
   },
   {
     id: 2,
@@ -29,7 +49,11 @@ const mockVeteranProfiles = [
     role: 'Major',
     branch: 'Indian Air Force',
     service: '12 years',
-    matchScore: 92
+    matchScore: 92,
+    skills: ['Aviation', 'Strategic Planning', 'Crisis Management'],
+    physicalStatus: 'Fit for Service',
+    education: 'Masters in Aeronautical Engineering',
+    location: 'Mumbai'
   }
 ];
 
@@ -92,7 +116,7 @@ const mockMentors = [
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [userType, setUserType] = useState('veteran');
+  const [userType, setUserType] = useState<UserType>('veteran');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
