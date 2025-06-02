@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Briefcase, BookOpen, MessageCircle, Shield, Award, TrendingUp, MapPin, Star, CheckCircle } from 'lucide-react';
+import { UserData } from '../common/Navbar';
 
 // Mock data for demonstration
 const veteranProfiles = [
@@ -10,7 +11,7 @@ const veteranProfiles = [
     service: "15 years",
     role: "Infantry Officer",
     skills: ["Leadership", "Team Management", "Strategic Planning", "Physical Fitness"],
-    physicalStatus: "Fit",
+    physicalStatus: "Fit" as const,
     education: "Bachelor's in Arts",
     location: "Delhi",
     matchScore: 95
@@ -22,7 +23,7 @@ const veteranProfiles = [
     service: "12 years",
     role: "Technical Officer",
     skills: ["Technical Analysis", "Project Management", "Quality Control", "Team Leadership"],
-    physicalStatus: "Injured",
+    physicalStatus: "Injured" as const,
     education: "B.Tech Electronics",
     location: "Bangalore",
     matchScore: 88
@@ -89,10 +90,18 @@ const courses = [
   }
 ];
 
-export default function VeteranPlatform() {
+interface VeteranPlatformProps {
+  userData: UserData | null;
+}
+
+const VeteranPlatform: React.FC<VeteranPlatformProps> = ({ userData }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [userType, setUserType] = useState('veteran'); // veteran or employer
   const [currentVeteran, setCurrentVeteran] = useState(veteranProfiles[0]);
+
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
 
   const Navbar = () => (
     <nav className="bg-gradient-to-r from-green-800 to-orange-600 text-white p-4 shadow-lg">
@@ -152,12 +161,12 @@ export default function VeteranPlatform() {
         <div className="lg:col-span-2 bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center space-x-4 mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
-              {currentVeteran.name.split(' ').map(n => n[0]).join('')}
+              {userData.name.split(' ').map(n => n[0]).join('')}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">{currentVeteran.name}</h2>
-              <p className="text-gray-600">{currentVeteran.role}, {currentVeteran.branch}</p>
-              <p className="text-sm text-gray-500">{currentVeteran.service} of service • {currentVeteran.location}</p>
+              <h2 className="text-2xl font-bold text-gray-800">{userData.name}</h2>
+              <p className="text-gray-600">{userData.role}, {userData.branch}</p>
+              <p className="text-sm text-gray-500">{userData.service} of service • {userData.location}</p>
             </div>
           </div>
           
@@ -165,23 +174,23 @@ export default function VeteranPlatform() {
             <div className="bg-green-50 p-4 rounded-lg">
               <h3 className="font-semibold text-green-800 mb-2">Physical Status</h3>
               <span className={`px-3 py-1 rounded-full text-sm ${
-                currentVeteran.physicalStatus === 'Fit' 
+                userData.physicalStatus === 'Fit' 
                   ? 'bg-green-200 text-green-800' 
                   : 'bg-yellow-200 text-yellow-800'
               }`}>
-                {currentVeteran.physicalStatus}
+                {userData.physicalStatus}
               </span>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <h3 className="font-semibold text-blue-800 mb-2">Education</h3>
-              <p className="text-blue-700">{currentVeteran.education}</p>
+              <p className="text-blue-700">{userData.education}</p>
             </div>
           </div>
 
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">Core Skills</h3>
             <div className="flex flex-wrap gap-2">
-              {currentVeteran.skills.map((skill, index) => (
+              {userData.skills?.map((skill, index) => (
                 <span key={index} className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">
                   {skill}
                 </span>
@@ -474,7 +483,7 @@ export default function VeteranPlatform() {
     <div className="min-h-screen bg-gray-100">
       <Navbar />
       
-      {userType === 'veteran' ? (
+      {userData.userType === 'veteran' ? (
         <>
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'jobs' && <JobMatches />}
@@ -528,4 +537,6 @@ export default function VeteranPlatform() {
       </footer>
     </div>
   );
-} 
+};
+
+export default VeteranPlatform; 
