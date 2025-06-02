@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Briefcase, BookOpen, MessageCircle, Shield, Award, TrendingUp, MapPin, Star, CheckCircle } from 'lucide-react';
-import { UserData } from '../common/Navbar';
+import { UserData } from '../../types';
 
 // Mock data for demonstration
 const veteranProfiles = [
   {
     id: 1,
-    name: "Major Rajesh Kumar",
-    branch: "Indian Army",
-    service: "15 years",
-    role: "Infantry Officer",
-    skills: ["Leadership", "Team Management", "Strategic Planning", "Physical Fitness"],
-    physicalStatus: "Fit" as const,
-    education: "Bachelor's in Arts",
-    location: "Delhi",
-    matchScore: 95
+    name: 'John Doe',
+    rank: 'Major',
+    service: 'Indian Army',
+    yearsOfService: 15,
+    skills: ['Leadership', 'Project Management', 'Strategic Planning'],
+    experience: 'Extensive experience in military operations and team leadership.',
+    education: 'B.Tech in Computer Science',
+    certifications: ['PMP', 'ITIL'],
+    interests: ['Technology', 'Management', 'Consulting'],
+    location: 'Delhi',
+    availability: 'Immediate',
+    preferredRoles: ['Project Manager', 'Operations Manager', 'Consultant'],
+    languages: ['English', 'Hindi'],
+    achievements: ['Distinguished Service Medal', 'Leadership Excellence Award'],
+    contact: {
+      email: 'john.doe@example.com',
+      phone: '+91 9876543210',
+      linkedin: 'linkedin.com/in/johndoe'
+    }
   },
-  {
-    id: 2,
-    name: "Squadron Leader Priya Sharma",
-    branch: "Indian Air Force",
-    service: "12 years",
-    role: "Technical Officer",
-    skills: ["Technical Analysis", "Project Management", "Quality Control", "Team Leadership"],
-    physicalStatus: "Injured" as const,
-    education: "B.Tech Electronics",
-    location: "Bangalore",
-    matchScore: 88
-  }
+  // Add more mock profiles as needed
 ];
 
 const jobListings = [
@@ -91,7 +90,7 @@ const courses = [
 ];
 
 interface VeteranPlatformProps {
-  userData: UserData | null;
+  userData: UserData;
 }
 
 const VeteranPlatform: React.FC<VeteranPlatformProps> = ({ userData }) => {

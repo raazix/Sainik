@@ -1,20 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
-import { UserData } from './components/common/Navbar';
+import Home from './components/Home';
 import Footer from './components/common/Footer';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import PostJob from './components/employer/PostJob';
-import Dashboard from './components/employer/Dashboard';
-import Analytics from './components/employer/Analytics';
-import JobMatches from './components/veteran/JobMatches';
-import LearningHub from './components/veteran/LearningHub';
-import Mentorship from './components/veteran/Mentorship';
-import Profile from './components/veteran/Profile';
-import VeteranPlatform from './components/veteran/VeteranPlatform';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import { Shield } from 'lucide-react';
+import VeteranDashboard from './components/veteran/VeteranDashboard';
+import EmployerDashboard from './components/employer/EmployerDashboard';
+import JobListings from './components/jobs/JobListings';
+import JobDetails from './components/jobs/JobDetails';
+import Profile from './components/profile/Profile';
+import { UserData } from './types';
 
 // Mock data
 const mockVeteranProfiles = [
@@ -167,98 +163,94 @@ const mockMentors = [
   // Add more mock mentors as needed
 ];
 
+type UserType = 'veteran' | 'employer';
+
 const App: React.FC = () => {
-  const [userType, setUserType] = useState<'veteran' | 'employer'>('veteran');
+  const [userType, setUserType] = useState<UserType | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
-    // Load user data from localStorage on component mount
-    const savedUserData = localStorage.getItem('userData');
-    const savedUserType = localStorage.getItem('userType');
+    // Check for stored authentication data on component mount
+    const storedUserType = localStorage.getItem('userType') as UserType | null;
+    const storedUserData = localStorage.getItem('userData');
     
-    if (savedUserData && savedUserType) {
-      setUserData(JSON.parse(savedUserData) as UserData);
-      setUserType(savedUserType as 'veteran' | 'employer');
+    if (storedUserType && storedUserData) {
+      setUserType(storedUserType);
+      setUserData(JSON.parse(storedUserData));
     }
   }, []);
 
   const handleLogout = () => {
-    setUserData(null);
-    localStorage.removeItem('userData');
     localStorage.removeItem('userType');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('token');
+    setUserType(null);
+    setUserData(null);
   };
 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Navbar 
-          userType={userType} 
+          userType={userType || 'veteran'} 
           userData={userData} 
           onLogout={handleLogout} 
         />
         <main className="container mx-auto px-4 py-8">
           <Routes>
-            <Route path="/login" element={
-              !userData ? (
-                <Login 
-                  onLogin={(type, data) => {
-                    setUserType(type);
-                    setUserData(data);
-                    localStorage.setItem('userType', type);
-                    localStorage.setItem('userData', JSON.stringify(data));
-                  }} 
-                />
-              ) : (
-                <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
-              )
-            } />
-            <Route path="/register" element={
-              !userData ? (
-                <Register 
-                  onLogin={(type, data) => {
-                    setUserType(type);
-                    setUserData(data);
-                    localStorage.setItem('userType', type);
-                    localStorage.setItem('userData', JSON.stringify(data));
-                  }} 
-                />
-              ) : (
-                <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
-              )
-            } />
-            
-            {/* Protected routes for veterans */}
-            <Route path="/veteran" element={
-              <ProtectedRoute userType="veteran" isAuthenticated={!!userData}>
-                <VeteranPlatform userData={userData} />
-              </ProtectedRoute>
-            } />
-            
-            {/* Protected routes for employers */}
-            <Route path="/employer/dashboard" element={
-              <ProtectedRoute userType="employer" isAuthenticated={!!userData}>
-                <Dashboard userData={userData} />
-              </ProtectedRoute>
-            } />
-            <Route path="/employer/post-job" element={
-              <ProtectedRoute userType="employer" isAuthenticated={!!userData}>
-                <PostJob userData={userData} />
-              </ProtectedRoute>
-            } />
-            <Route path="/employer/analytics" element={
-              <ProtectedRoute userType="employer" isAuthenticated={!!userData}>
-                <Analytics userData={userData} />
-              </ProtectedRoute>
-            } />
-            
-            {/* Redirect root to login if not authenticated */}
-            <Route path="/" element={
-              userData ? (
-                <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
-              ) : (
-                <Navigate to="/login" />
-              )
-            } />
+            <Route path="/" element={<Home />} />
+            <Route 
+              path="/login" 
+              element={
+                !userData ? (
+                  <Login />
+                ) : (
+                  <Navigate to={userType === 'veteran' ? '/veteran-dashboard' : '/employer-dashboard'} />
+                )
+              } 
+            />
+            <Route 
+              path="/register" 
+              element={
+                !userData ? (
+                  <Register />
+                ) : (
+                  <Navigate to={userType === 'veteran' ? '/veteran-dashboard' : '/employer-dashboard'} />
+                )
+              } 
+            />
+            <Route 
+              path="/veteran-dashboard" 
+              element={
+                userData && userType === 'veteran' ? (
+                  <VeteranDashboard userData={userData} />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              } 
+            />
+            <Route 
+              path="/employer-dashboard" 
+              element={
+                userData && userType === 'employer' ? (
+                  <EmployerDashboard userData={userData} />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              } 
+            />
+            <Route path="/jobs" element={<JobListings />} />
+            <Route path="/jobs/:id" element={<JobDetails />} />
+            <Route 
+              path="/profile" 
+              element={
+                userData ? (
+                  <Profile userData={userData} />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              } 
+            />
           </Routes>
         </main>
         <Footer />

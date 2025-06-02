@@ -1,88 +1,92 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   name: string;
   email: string;
   password: string;
+  role: string;
   userType: 'veteran' | 'employer';
   branch?: string;
   service?: string;
-  role?: string;
   company?: string;
   position?: string;
-  comparePassword(candidatePassword: string): Promise<boolean>;
+  physicalStatus?: string;
+  education?: string;
+  skills?: string[];
+  achievements?: string[];
+  certifications?: string[];
+  languages?: string[];
+  location?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
-interface IUserDocument extends IUser {
-  userType: 'veteran' | 'employer';
-}
-
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Please add a name'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Please add an email'],
+      unique: true,
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        'Please add a valid email',
+      ],
+    },
+    password: {
+      type: String,
+      required: [true, 'Please add a password'],
+      minlength: 6,
+      select: false,
+    },
+    role: {
+      type: String,
+      enum: ['veteran', 'employer', 'admin'],
+      default: 'veteran',
+    },
+    userType: {
+      type: String,
+      required: [true, 'Please specify user type'],
+      enum: ['veteran', 'employer'],
+    },
+    branch: String,
+    service: String,
+    company: String,
+    position: String,
+    physicalStatus: String,
+    education: String,
+    skills: [String],
+    achievements: [String],
+    certifications: [String],
+    languages: [String],
+    location: String,
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6
-  },
-  userType: {
-    type: String,
-    required: true,
-    enum: ['veteran', 'employer']
-  },
-  // Veteran specific fields
-  branch: {
-    type: String,
-    required: function(this: IUserDocument) { return this.userType === 'veteran'; }
-  },
-  service: {
-    type: String,
-    required: function(this: IUserDocument) { return this.userType === 'veteran'; }
-  },
-  role: {
-    type: String,
-    required: function(this: IUserDocument) { return this.userType === 'veteran'; }
-  },
-  // Employer specific fields
-  company: {
-    type: String,
-    required: function(this: IUserDocument) { return this.userType === 'employer'; }
-  },
-  position: {
-    type: String,
-    required: function(this: IUserDocument) { return this.userType === 'employer'; }
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+// Encrypt password using bcrypt
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
     next();
-  } catch (error: any) {
-    next(error);
   }
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Compare password method
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
+// Match user entered password to hashed password in database
+userSchema.methods.matchPassword = async function (enteredPassword: string) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export const User = mongoose.model<IUser>('User', userSchema); 
+const User = mongoose.model<IUser>('User', userSchema);
+
+export default User; 

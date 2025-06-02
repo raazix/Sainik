@@ -1,57 +1,51 @@
 import React, { useState } from 'react';
-import { UserData } from '../common/Navbar';
+import { useNavigate } from 'react-router-dom';
+import { Shield } from 'lucide-react';
+import { authService } from '../../services/api';
 
-interface RegisterProps {
-  onLogin: (type: 'veteran' | 'employer', data: UserData) => void;
+interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  userType: 'veteran' | 'employer';
+  role: string;
+  branch?: string;
+  service?: string;
+  company?: string;
+  position?: string;
+  physicalStatus?: string;
+  education?: string;
+  skills?: string[];
+  achievements?: string[];
+  certifications?: string[];
+  languages?: string[];
+  location?: string;
 }
 
-const Register: React.FC<RegisterProps> = ({ onLogin }) => {
-  const [formData, setFormData] = useState({
+const Register: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    userType: 'veteran' as 'veteran' | 'employer',
-    // Additional fields based on user type
+    userType: 'veteran',
+    role: 'veteran',
     branch: '',
     service: '',
     company: '',
     position: '',
-    physicalStatus: 'Fit' as 'Fit' | 'Injured'
+    physicalStatus: '',
+    education: '',
+    skills: [],
+    achievements: [],
+    certifications: [],
+    languages: [],
+    location: ''
   });
   const [error, setError] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    // In a real app, this would be an API call to register the user
-    // For demo purposes, we'll create a mock user and log them in
-    const userData: UserData = {
-      id: Math.floor(Math.random() * 1000), // Mock ID generation
-      name: formData.name,
-      email: formData.email,
-      role: formData.userType === 'veteran' ? 'Veteran' : 'HR Manager',
-      userType: formData.userType,
-      ...(formData.userType === 'veteran' 
-        ? { 
-            branch: formData.branch, 
-            service: formData.service,
-            physicalStatus: formData.physicalStatus
-          }
-        : { 
-            company: formData.company, 
-            position: formData.position 
-          })
-    };
-
-    onLogin(formData.userType, userData);
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -61,10 +55,45 @@ const Register: React.FC<RegisterProps> = ({ onLogin }) => {
     }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authService.register(formData);
+      
+      // Store the token and user data
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('userData', JSON.stringify(response.userData));
+      localStorage.setItem('userType', response.userType);
+
+      // Redirect based on user type
+      if (response.userType === 'veteran') {
+        navigate('/veteran-dashboard');
+      } else {
+        navigate('/employer-dashboard');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'An error occurred during registration');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
+          <div className="flex justify-center">
+            <Shield className="h-12 w-12 text-green-600" />
+          </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
@@ -72,163 +101,151 @@ const Register: React.FC<RegisterProps> = ({ onLogin }) => {
             Join Jawansethu to start your journey
           </p>
         </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div className="flex space-x-4 mb-4">
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, userType: 'veteran' }))}
-                className={`flex-1 py-2 px-4 rounded ${
-                  formData.userType === 'veteran'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-700'
-                }`}
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          )}
+
+          <div className="rounded-md shadow-sm space-y-4">
+            <div>
+              <label htmlFor="userType" className="block text-sm font-medium text-gray-700">I am a</label>
+              <select
+                id="userType"
+                name="userType"
+                value={formData.userType}
+                onChange={handleInputChange}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               >
-                Veteran
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData(prev => ({ ...prev, userType: 'employer' }))}
-                className={`flex-1 py-2 px-4 rounded ${
-                  formData.userType === 'employer'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-200 text-gray-700'
-                }`}
-              >
-                Employer
-              </button>
+                <option value="veteran">Veteran</option>
+                <option value="employer">Employer</option>
+              </select>
             </div>
 
             <div>
-              <label htmlFor="name" className="sr-only">Full Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
               <input
                 id="name"
                 name="name"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Full Name"
                 value={formData.name}
                 onChange={handleInputChange}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
                 value={formData.email}
                 onChange={handleInputChange}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               />
             </div>
 
-            {formData.userType === 'veteran' ? (
+            {formData.userType === 'veteran' && (
               <>
                 <div>
-                  <label htmlFor="branch" className="sr-only">Branch of Service</label>
+                  <label htmlFor="branch" className="block text-sm font-medium text-gray-700">Branch of Service</label>
                   <input
                     id="branch"
                     name="branch"
                     type="text"
                     required
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                    placeholder="Branch of Service"
                     value={formData.branch}
                     onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                   />
                 </div>
+
                 <div>
-                  <label htmlFor="service" className="sr-only">Years of Service</label>
+                  <label htmlFor="service" className="block text-sm font-medium text-gray-700">Years of Service</label>
                   <input
                     id="service"
                     name="service"
                     type="text"
                     required
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                    placeholder="Years of Service"
                     value={formData.service}
                     onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                   />
                 </div>
               </>
-            ) : (
+            )}
+
+            {formData.userType === 'employer' && (
               <>
                 <div>
-                  <label htmlFor="company" className="sr-only">Company Name</label>
+                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company Name</label>
                   <input
                     id="company"
                     name="company"
                     type="text"
                     required
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                    placeholder="Company Name"
                     value={formData.company}
                     onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                   />
                 </div>
+
                 <div>
-                  <label htmlFor="position" className="sr-only">Position</label>
+                  <label htmlFor="position" className="block text-sm font-medium text-gray-700">Your Position</label>
                   <input
                     id="position"
                     name="position"
                     type="text"
                     required
-                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                    placeholder="Position"
                     value={formData.position}
                     onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
                   />
                 </div>
               </>
             )}
 
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
                 value={formData.password}
                 onChange={handleInputChange}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               />
             </div>
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
-
           <div>
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              disabled={loading}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                loading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </div>
         </form>
@@ -236,7 +253,7 @@ const Register: React.FC<RegisterProps> = ({ onLogin }) => {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <a href="#" className="font-medium text-green-600 hover:text-green-500">
+            <a href="/login" className="font-medium text-green-600 hover:text-green-500">
               Sign in
             </a>
           </p>
