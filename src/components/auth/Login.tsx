@@ -14,8 +14,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const mockVeterans: UserData[] = [
     {
       id: 1,
-      name: 'Rajesh Kumar',
-      email: 'rajesh@example.com',
+      name: 'Major Rajesh Kumar',
+      email: 'rajesh.kumar@indianarmy.mil.in',
       userType: 'veteran',
       role: 'Ex-Army Officer',
       branch: 'Indian Army',
@@ -30,8 +30,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     },
     {
       id: 2,
-      name: 'Priya Singh',
-      email: 'priya@example.com',
+      name: 'Squadron Leader Priya Sharma',
+      email: 'priya.sharma@indianairforce.mil.in',
       userType: 'veteran',
       role: 'Ex-Navy Officer',
       branch: 'Indian Navy',
@@ -46,8 +46,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     },
     {
       id: 3,
-      name: 'Amit Patel',
-      email: 'amit@example.com',
+      name: 'Captain Arun Singh',
+      email: 'captain.arun@indiannavy.mil.in',
       userType: 'veteran',
       role: 'Ex-Air Force Pilot',
       branch: 'Indian Air Force',
@@ -68,13 +68,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     // Mock authentication - in a real app, this would be an API call
     if (userType === 'veteran') {
-      if (email === 'rajesh.kumar@indianarmy.mil.in' && password === 'Vet@123') {
+      if (email === 'rajesh.kumar@indianarmy.mil.in' && password === '1234') {
         onLogin('veteran', mockVeterans[0]);
-      } else if (email === 'priya.sharma@indianairforce.mil.in' && password === 'Vet@456') {
+      } else if (email === 'priya.sharma@indianairforce.mil.in' && password === '1234') {
         onLogin('veteran', mockVeterans[1]);
-      } else if (email === 'captain.arun@indiannavy.mil.in' && password === 'Vet@789') {
+      } else if (email === 'captain.arun@indiannavy.mil.in' && password === '1234') {
         onLogin('veteran', mockVeterans[2]);
-      } else if (email === 'colonel.meera@indianarmy.mil.in' && password === 'Vet@101') {
+      } else if (email === 'colonel.meera@indianarmy.mil.in' && password === '1234') {
         onLogin('veteran', {
           id: 4,
           name: 'Colonel Meera Patel',
@@ -91,7 +91,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           languages: ['Hindi', 'English', 'Tamil'],
           location: 'Chennai'
         });
-      } else if (email === 'wingcommander.rahul@indianairforce.mil.in' && password === 'Vet@202') {
+      } else if (email === 'wingcommander.rahul@indianairforce.mil.in' && password === '1234') {
         onLogin('veteran', {
           id: 5,
           name: 'Wing Commander Rahul Verma',
@@ -112,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setError('Invalid credentials');
       }
     } else {
-      if (email === 'careers@secureguard.in' && password === 'Emp@123') {
+      if (email === 'careers@secureguard.in' && password === '1234') {
         onLogin('employer', {
           id: 1,
           name: 'SecureGuard Solutions',
@@ -123,7 +123,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           position: 'HR Manager',
           location: 'Mumbai'
         });
-      } else if (email === 'hr@techcorp.in' && password === 'Emp@456') {
+      } else if (email === 'hr@techcorp.in' && password === '1234') {
         onLogin('employer', {
           id: 2,
           name: 'TechCorp India',
@@ -134,7 +134,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           position: 'HR Director',
           location: 'Bangalore'
         });
-      } else if (email === 'careers@defensetech.in' && password === 'Emp@789') {
+      } else if (email === 'careers@defensetech.in' && password === '1234') {
         onLogin('employer', {
           id: 3,
           name: 'DefenseTech Systems',
@@ -145,7 +145,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           position: 'Talent Acquisition Manager',
           location: 'Delhi'
         });
-      } else if (email === 'hr@strategicconsulting.in' && password === 'Emp@101') {
+      } else if (email === 'hr@strategicconsulting.in' && password === '1234') {
         onLogin('employer', {
           id: 4,
           name: 'Strategic Consulting Group',
@@ -156,7 +156,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           position: 'HR Head',
           location: 'Chennai'
         });
-      } else if (email === 'careers@militarytech.in' && password === 'Emp@202') {
+      } else if (email === 'careers@militarytech.in' && password === '1234') {
         onLogin('employer', {
           id: 5,
           name: 'MilitaryTech Innovations',
