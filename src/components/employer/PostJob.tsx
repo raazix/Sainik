@@ -1,25 +1,40 @@
 import React, { useState } from 'react';
 
-interface JobFormData {
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  requirements: string[];
-  salary: string;
-  description: string;
+interface UserData {
+  name: string;
+  email: string;
+  userType: 'veteran' | 'employer';
+  branch?: string;
+  service?: string;
+  role?: string;
+  company?: string;
+  position?: string;
 }
 
-const PostJob: React.FC = () => {
-  const [formData, setFormData] = useState<JobFormData>({
+interface PostJobProps {
+  userData: UserData | null;
+}
+
+const PostJob: React.FC<PostJobProps> = ({ userData }) => {
+  const [formData, setFormData] = useState({
     title: '',
-    company: '',
+    description: '',
+    requirements: '',
     location: '',
-    type: '',
-    requirements: [''],
+    type: 'Full-time',
     salary: '',
-    description: ''
+    deadline: ''
   });
+
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle job posting logic
+    console.log('Job posted:', formData);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,160 +44,138 @@ const PostJob: React.FC = () => {
     }));
   };
 
-  const handleRequirementChange = (index: number, value: string) => {
-    const newRequirements = [...formData.requirements];
-    newRequirements[index] = value;
-    setFormData(prev => ({
-      ...prev,
-      requirements: newRequirements
-    }));
-  };
-
-  const addRequirement = () => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: [...prev.requirements, '']
-    }));
-  };
-
-  const removeRequirement = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: prev.requirements.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log(formData);
-  };
-
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Post a New Job</h2>
-        <p className="text-gray-600">Create a job listing to attract veteran talent</p>
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Post a New Job</h1>
+          
+          <div className="bg-white shadow rounded-lg p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                  Job Title
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  id="title"
+                  required
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Job Description
+                </label>
+                <textarea
+                  name="description"
+                  id="description"
+                  rows={4}
+                  required
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
+                  Requirements
+                </label>
+                <textarea
+                  name="requirements"
+                  id="requirements"
+                  rows={4}
+                  required
+                  value={formData.requirements}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    id="location"
+                    required
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+                    Job Type
+                  </label>
+                  <select
+                    name="type"
+                    id="type"
+                    required
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  >
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Remote">Remote</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="salary" className="block text-sm font-medium text-gray-700">
+                    Salary Range
+                  </label>
+                  <input
+                    type="text"
+                    name="salary"
+                    id="salary"
+                    required
+                    value={formData.salary}
+                    onChange={handleInputChange}
+                    placeholder="e.g., ₹6L - ₹8L per annum"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="deadline" className="block text-sm font-medium text-gray-700">
+                    Application Deadline
+                  </label>
+                  <input
+                    type="date"
+                    name="deadline"
+                    id="deadline"
+                    required
+                    value={formData.deadline}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  Post Job
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-            <input
-              type="text"
-              name="company"
-              value={formData.company}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select Type</option>
-              <option value="Physical">Physical</option>
-              <option value="Digital">Digital</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range</label>
-            <input
-              type="text"
-              name="salary"
-              value={formData.salary}
-              onChange={handleInputChange}
-              placeholder="e.g., ₹6-8 LPA"
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
-          {formData.requirements.map((req, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={req}
-                onChange={(e) => handleRequirementChange(index, e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => removeRequirement(index)}
-                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addRequirement}
-            className="mt-2 px-4 py-2 text-green-600 hover:bg-green-50 rounded"
-          >
-            + Add Requirement
-          </button>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            rows={6}
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            required
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-8 py-3 rounded hover:bg-green-700 transition-colors"
-          >
-            Post Job
-          </button>
-        </div>
-      </form>
     </div>
   );
 };

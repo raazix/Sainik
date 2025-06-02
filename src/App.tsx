@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
+import { UserData } from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
@@ -13,6 +14,7 @@ import Mentorship from './components/veteran/Mentorship';
 import Profile from './components/veteran/Profile';
 import VeteranPlatform from './components/veteran/VeteranPlatform';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { Shield } from 'lucide-react';
 
 // Mock data
 const mockVeteranProfiles = [
@@ -166,47 +168,60 @@ const mockMentors = [
 ];
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userType, setUserType] = useState<'veteran' | 'employer'>('veteran');
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
-    const auth = localStorage.getItem('isAuthenticated');
-    const type = localStorage.getItem('userType') as 'veteran' | 'employer';
-    if (auth === 'true' && type) {
-      setIsAuthenticated(true);
-      setUserType(type);
+    // Load user data from localStorage on component mount
+    const savedUserData = localStorage.getItem('userData');
+    const savedUserType = localStorage.getItem('userType');
+    
+    if (savedUserData && savedUserType) {
+      setUserData(JSON.parse(savedUserData) as UserData);
+      setUserType(savedUserType as 'veteran' | 'employer');
     }
   }, []);
 
-  const handleLogin = (type: 'veteran' | 'employer') => {
-    setIsAuthenticated(true);
-    setUserType(type);
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userType', type);
-  };
-
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
+    setUserData(null);
+    localStorage.removeItem('userData');
     localStorage.removeItem('userType');
   };
 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
-        <Navbar userType={userType} setUserType={setUserType} onLogout={handleLogout} />
+        <Navbar 
+          userType={userType} 
+          userData={userData} 
+          onLogout={handleLogout} 
+        />
         <main className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/login" element={
-              !isAuthenticated ? (
-                <Login onLogin={handleLogin} />
+              !userData ? (
+                <Login 
+                  onLogin={(type, data) => {
+                    setUserType(type);
+                    setUserData(data);
+                    localStorage.setItem('userType', type);
+                    localStorage.setItem('userData', JSON.stringify(data));
+                  }} 
+                />
               ) : (
                 <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
               )
             } />
             <Route path="/register" element={
-              !isAuthenticated ? (
-                <Register onLogin={handleLogin} />
+              !userData ? (
+                <Register 
+                  onLogin={(type, data) => {
+                    setUserType(type);
+                    setUserData(data);
+                    localStorage.setItem('userType', type);
+                    localStorage.setItem('userData', JSON.stringify(data));
+                  }} 
+                />
               ) : (
                 <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
               )
@@ -214,31 +229,31 @@ const App: React.FC = () => {
             
             {/* Protected routes for veterans */}
             <Route path="/veteran" element={
-              <ProtectedRoute userType="veteran">
-                <VeteranPlatform />
+              <ProtectedRoute userType="veteran" isAuthenticated={!!userData}>
+                <VeteranPlatform userData={userData} />
               </ProtectedRoute>
             } />
             
             {/* Protected routes for employers */}
             <Route path="/employer/dashboard" element={
-              <ProtectedRoute userType="employer">
-                <Dashboard veteranProfiles={mockVeteranProfiles} />
-              </ProtectedRoute>
-            } />
-            <Route path="/employer/analytics" element={
-              <ProtectedRoute userType="employer">
-                <Analytics />
+              <ProtectedRoute userType="employer" isAuthenticated={!!userData}>
+                <Dashboard userData={userData} />
               </ProtectedRoute>
             } />
             <Route path="/employer/post-job" element={
-              <ProtectedRoute userType="employer">
-                <PostJob />
+              <ProtectedRoute userType="employer" isAuthenticated={!!userData}>
+                <PostJob userData={userData} />
+              </ProtectedRoute>
+            } />
+            <Route path="/employer/analytics" element={
+              <ProtectedRoute userType="employer" isAuthenticated={!!userData}>
+                <Analytics userData={userData} />
               </ProtectedRoute>
             } />
             
-            {/* Redirect root to appropriate dashboard */}
+            {/* Redirect root to login if not authenticated */}
             <Route path="/" element={
-              isAuthenticated ? (
+              userData ? (
                 <Navigate to={userType === 'veteran' ? '/veteran' : '/employer/dashboard'} />
               ) : (
                 <Navigate to="/login" />

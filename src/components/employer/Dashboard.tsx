@@ -1,107 +1,111 @@
 import React from 'react';
 import { Briefcase, Users, CheckCircle } from 'lucide-react';
 
-interface VeteranProfile {
-  id: number;
+interface UserData {
   name: string;
-  rank: string;
-  service: string;
-  yearsOfService: number;
-  skills: string[];
-  experience: string;
-  education: string;
-  certifications: string[];
-  interests: string[];
-  location: string;
-  availability: string;
-  preferredRoles: string[];
-  languages: string[];
-  achievements: string[];
-  contact: {
-    email: string;
-    phone: string;
-    linkedin: string;
-  };
+  email: string;
+  userType: 'veteran' | 'employer';
+  branch?: string;
+  service?: string;
+  role?: string;
+  company?: string;
+  position?: string;
 }
 
-interface EmployerDashboardProps {
-  veteranProfiles: VeteranProfile[];
+interface DashboardProps {
+  userData: UserData | null;
 }
 
-const EmployerDashboard: React.FC<EmployerDashboardProps> = ({ veteranProfiles }) => {
+const Dashboard: React.FC<DashboardProps> = ({ userData }) => {
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Employer Dashboard</h2>
-        <p className="text-gray-600">Manage veteran recruitment and access talent pool</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Active Job Posts</h3>
-            <Briefcase className="h-8 w-8 text-blue-500" />
-          </div>
-          <p className="text-3xl font-bold text-blue-600">12</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Applications</h3>
-            <Users className="h-8 w-8 text-green-500" />
-          </div>
-          <p className="text-3xl font-bold text-green-600">84</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Hired Veterans</h3>
-            <CheckCircle className="h-8 w-8 text-orange-500" />
-          </div>
-          <p className="text-3xl font-bold text-orange-600">23</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Recent Applications</h3>
-          <div className="space-y-4">
-            {veteranProfiles.map((profile) => (
-              <div key={profile.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-semibold text-gray-800">{profile.name}</h4>
-                    <p className="text-gray-600">{profile.rank} - {profile.service}</p>
-                  </div>
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                    {profile.skills.length} Skills
-                  </span>
-                </div>
-                <div className="flex space-x-2">
-                  <button className="bg-green-600 text-white px-4 py-1 rounded text-sm hover:bg-green-700">
-                    View Profile
-                  </button>
-                  <button className="border border-gray-300 text-gray-700 px-4 py-1 rounded text-sm hover:bg-gray-50">
-                    Schedule Interview
-                  </button>
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Welcome Section */}
+        <div className="bg-white shadow rounded-lg mb-6">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="h-16 w-16 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+                  {userData.name.split(' ').map(n => n[0]).join('')}
                 </div>
               </div>
-            ))}
+              <div className="ml-4">
+                <h2 className="text-2xl font-bold text-gray-900">Welcome, {userData.name}</h2>
+                <p className="text-sm text-gray-500">
+                  {userData.position}, {userData.company}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition-colors">
-              Post New Job
-            </button>
-            <button className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 transition-colors">
-              Browse Veteran Profiles
-            </button>
-            <button className="w-full bg-orange-600 text-white py-3 rounded hover:bg-orange-700 transition-colors">
-              View Analytics
-            </button>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Briefcase className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Active Job Postings</dt>
+                    <dd className="text-lg font-medium text-gray-900">12</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Users className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Veteran Applications</dt>
+                    <dd className="text-lg font-medium text-gray-900">48</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <CheckCircle className="h-6 w-6 text-gray-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">Successful Placements</dt>
+                    <dd className="text-lg font-medium text-gray-900">24</dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                Post New Job
+              </button>
+              <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                View Applications
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -109,4 +113,4 @@ const EmployerDashboard: React.FC<EmployerDashboardProps> = ({ veteranProfiles }
   );
 };
 
-export default EmployerDashboard; 
+export default Dashboard; 

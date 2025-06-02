@@ -1,114 +1,122 @@
 import React from 'react';
-import { TrendingUp, Users, Briefcase, CheckCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-interface AnalyticsData {
-  totalViews: number;
-  totalApplications: number;
-  conversionRate: number;
-  averageMatchScore: number;
-  topSkills: { skill: string; count: number }[];
-  applicationsByMonth: { month: string; count: number }[];
+interface UserData {
+  name: string;
+  email: string;
+  userType: 'veteran' | 'employer';
+  branch?: string;
+  service?: string;
+  role?: string;
+  company?: string;
+  position?: string;
 }
 
-const mockData: AnalyticsData = {
-  totalViews: 1250,
-  totalApplications: 84,
-  conversionRate: 6.7,
-  averageMatchScore: 85,
-  topSkills: [
-    { skill: 'Leadership', count: 45 },
-    { skill: 'Project Management', count: 38 },
-    { skill: 'Technical Analysis', count: 32 },
-    { skill: 'Team Management', count: 28 }
-  ],
-  applicationsByMonth: [
-    { month: 'Jan', count: 12 },
-    { month: 'Feb', count: 18 },
-    { month: 'Mar', count: 15 },
-    { month: 'Apr', count: 22 },
-    { month: 'May', count: 17 }
-  ]
-};
+interface AnalyticsProps {
+  userData: UserData | null;
+}
 
-const Analytics: React.FC = () => {
+const Analytics: React.FC<AnalyticsProps> = ({ userData }) => {
+  if (!userData) {
+    return <div>Loading...</div>;
+  }
+
+  // Mock data for analytics
+  const data = [
+    { name: 'Jan', applications: 65, interviews: 20, hires: 5 },
+    { name: 'Feb', applications: 59, interviews: 25, hires: 8 },
+    { name: 'Mar', applications: 80, interviews: 30, hires: 12 },
+    { name: 'Apr', applications: 81, interviews: 35, hires: 15 },
+    { name: 'May', applications: 56, interviews: 28, hires: 10 },
+    { name: 'Jun', applications: 55, interviews: 22, hires: 7 },
+  ];
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Recruitment Analytics</h2>
-        <p className="text-gray-600">Track your veteran recruitment metrics and performance</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Total Views</h3>
-            <TrendingUp className="h-8 w-8 text-blue-500" />
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics Dashboard</h1>
+          
+          <div className="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recruitment Overview</h2>
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={data}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="applications" fill="#8884d8" />
+                  <Bar dataKey="interviews" fill="#82ca9d" />
+                  <Bar dataKey="hires" fill="#ffc658" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <p className="text-3xl font-bold text-blue-600">{mockData.totalViews}</p>
-          <p className="text-sm text-gray-500 mt-2">+12% from last month</p>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Applications</h3>
-            <Users className="h-8 w-8 text-green-500" />
-          </div>
-          <p className="text-3xl font-bold text-green-600">{mockData.totalApplications}</p>
-          <p className="text-sm text-gray-500 mt-2">+8% from last month</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Conversion Rate</h3>
-            <Briefcase className="h-8 w-8 text-orange-500" />
-          </div>
-          <p className="text-3xl font-bold text-orange-600">{mockData.conversionRate}%</p>
-          <p className="text-sm text-gray-500 mt-2">+2% from last month</p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Avg. Match Score</h3>
-            <CheckCircle className="h-8 w-8 text-purple-500" />
-          </div>
-          <p className="text-3xl font-bold text-purple-600">{mockData.averageMatchScore}%</p>
-          <p className="text-sm text-gray-500 mt-2">+5% from last month</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Top Skills in Applications</h3>
-          <div className="space-y-4">
-            {mockData.topSkills.map((skill, index) => (
-              <div key={index}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">{skill.skill}</span>
-                  <span className="text-gray-600">{skill.count} veterans</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{ width: `${(skill.count / mockData.topSkills[0].count) * 100}%` }}
-                  />
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Total Applications</dt>
+                      <dd className="text-lg font-medium text-gray-900">396</dd>
+                    </dl>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Applications by Month</h3>
-          <div className="h-64 flex items-end space-x-2">
-            {mockData.applicationsByMonth.map((data, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center">
-                <div
-                  className="w-full bg-blue-500 rounded-t"
-                  style={{ height: `${(data.count / Math.max(...mockData.applicationsByMonth.map(d => d.count))) * 100}%` }}
-                />
-                <span className="text-sm text-gray-600 mt-2">{data.month}</span>
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Successful Hires</dt>
+                      <dd className="text-lg font-medium text-gray-900">57</dd>
+                    </dl>
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
+
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Conversion Rate</dt>
+                      <dd className="text-lg font-medium text-gray-900">14.4%</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
