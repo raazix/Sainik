@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
-import { authService } from '../../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { UserData } from '../../types';
 
 interface RegisterFormData {
   name: string;
@@ -9,21 +9,18 @@ interface RegisterFormData {
   password: string;
   confirmPassword: string;
   userType: 'veteran' | 'employer';
-  role: string;
   branch?: string;
   service?: string;
+  location?: string;
   company?: string;
   position?: string;
-  physicalStatus?: string;
-  education?: string;
-  skills?: string[];
-  achievements?: string[];
-  certifications?: string[];
-  languages?: string[];
-  location?: string;
 }
 
-const Register: React.FC = () => {
+interface RegisterProps {
+  onRegisterSuccess: (userType: 'veteran' | 'employer', userData: UserData) => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ onRegisterSuccess }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
@@ -31,18 +28,11 @@ const Register: React.FC = () => {
     password: '',
     confirmPassword: '',
     userType: 'veteran',
-    role: 'veteran',
     branch: '',
     service: '',
+    location: '',
     company: '',
-    position: '',
-    physicalStatus: '',
-    education: '',
-    skills: [],
-    achievements: [],
-    certifications: [],
-    languages: [],
-    location: ''
+    position: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -53,35 +43,65 @@ const Register: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) return 'Name is required';
+    if (!formData.email.trim()) return 'Email is required';
+    if (!formData.password) return 'Password is required';
+    if (formData.password.length < 6) return 'Password must be at least 6 characters';
+    if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
+    
+    if (formData.userType === 'veteran') {
+      if (!formData.branch?.trim()) return 'Branch of service is required for veterans';
+      if (!formData.service?.trim()) return 'Years of service is required for veterans';
+      if (!formData.location?.trim()) return 'Location is required';
+    } else {
+      if (!formData.company?.trim()) return 'Company name is required for employers';
+      if (!formData.position?.trim()) return 'Position is required for employers';
+      if (!formData.location?.trim()) return 'Location is required';
+    }
+    
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
+    setLoading(true);
     try {
-      const response = await authService.register(formData);
-      
-      // Store the token and user data
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userData', JSON.stringify(response.userData));
-      localStorage.setItem('userType', response.userType);
+      // Create the user data object
+      const userData: UserData = {
+        name: formData.name,
+        email: formData.email,
+        userType: formData.userType,
+        ...(formData.userType === 'veteran' ? {
+          branch: formData.branch,
+          service: formData.service,
+          location: formData.location
+        } : {
+          company: formData.company,
+          position: formData.position,
+          location: formData.location
+        })
+      };
 
-      // Redirect based on user type
-      if (response.userType === 'veteran') {
-        navigate('/veteran-dashboard');
-      } else {
-        navigate('/employer-dashboard');
-      }
+      // Store in localStorage
+      localStorage.setItem('userData', JSON.stringify(userData));
+      
+      // Call the success callback
+      onRegisterSuccess(formData.userType, userData);
+      
+      // Navigate to profile completion
+      navigate('/complete-profile');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred during registration');
+      setError(err.message || 'An error occurred during registration');
     } finally {
       setLoading(false);
     }
@@ -97,9 +117,10 @@ const Register: React.FC = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Join Jawansethu to start your journey
-          </p>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Join Jawansethu to start your journey</h2>
+            <p className="mt-2 text-gray-600">Connect with opportunities that value your service</p>
+          </div>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -150,66 +171,6 @@ const Register: React.FC = () => {
               />
             </div>
 
-            {formData.userType === 'veteran' && (
-              <>
-                <div>
-                  <label htmlFor="branch" className="block text-sm font-medium text-gray-700">Branch of Service</label>
-                  <input
-                    id="branch"
-                    name="branch"
-                    type="text"
-                    required
-                    value={formData.branch}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="service" className="block text-sm font-medium text-gray-700">Years of Service</label>
-                  <input
-                    id="service"
-                    name="service"
-                    type="text"
-                    required
-                    value={formData.service}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  />
-                </div>
-              </>
-            )}
-
-            {formData.userType === 'employer' && (
-              <>
-                <div>
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company Name</label>
-                  <input
-                    id="company"
-                    name="company"
-                    type="text"
-                    required
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="position" className="block text-sm font-medium text-gray-700">Your Position</label>
-                  <input
-                    id="position"
-                    name="position"
-                    type="text"
-                    required
-                    value={formData.position}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                  />
-                </div>
-              </>
-            )}
-
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
               <input
@@ -235,17 +196,93 @@ const Register: React.FC = () => {
                 className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
               />
             </div>
+
+            {formData.userType === 'veteran' ? (
+              <>
+                <div>
+                  <label htmlFor="branch" className="block text-sm font-medium text-gray-700">Branch of Service</label>
+                  <select
+                    id="branch"
+                    name="branch"
+                    value={formData.branch}
+                    onChange={handleInputChange}
+                    required
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  >
+                    <option value="">Select Branch</option>
+                    <option value="Indian Army">Indian Army</option>
+                    <option value="Indian Navy">Indian Navy</option>
+                    <option value="Indian Air Force">Indian Air Force</option>
+                    <option value="Coast Guard">Coast Guard</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="service" className="block text-sm font-medium text-gray-700">Years of Service</label>
+                  <input
+                    id="service"
+                    name="service"
+                    type="text"
+                    required
+                    value={formData.service}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                    placeholder="e.g. 15 years"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company Name</label>
+                  <input
+                    id="company"
+                    name="company"
+                    type="text"
+                    required
+                    value={formData.company}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="position" className="block text-sm font-medium text-gray-700">Position</label>
+                  <input
+                    id="position"
+                    name="position"
+                    type="text"
+                    required
+                    value={formData.position}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  />
+                </div>
+              </>
+            )}
+
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
+              <input
+                id="location"
+                name="location"
+                type="text"
+                required
+                value={formData.location}
+                onChange={handleInputChange}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                placeholder="e.g. Mumbai"
+              />
+            </div>
           </div>
 
           <div>
             <button
               type="submit"
               disabled={loading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                loading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </div>
         </form>
@@ -253,9 +290,9 @@ const Register: React.FC = () => {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <a href="/login" className="font-medium text-green-600 hover:text-green-500">
+            <Link to="/login" className="font-medium text-green-600 hover:text-green-500">
               Sign in
-            </a>
+            </Link>
           </p>
         </div>
       </div>

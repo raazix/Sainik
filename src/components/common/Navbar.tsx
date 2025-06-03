@@ -1,84 +1,55 @@
 import React from 'react';
+import { Shield, Book, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { UserData } from '../../types';
 
 interface NavbarProps {
-  userType: 'veteran' | 'employer';
-  userData: UserData | null;
+  userData: UserData;
   onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ userType, userData, onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ userData, onLogout }) => {
   return (
-    <nav className="bg-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold text-green-600">
-                Jawansethu
-              </Link>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                to="/jobs"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Jobs
-              </Link>
-              {userData && (
-                <>
-                  <Link
-                    to="/profile"
-                    className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                  >
-                    Profile
-                  </Link>
-                  {userType === 'employer' && (
-                    <Link
-                      to="/employer-dashboard"
-                      className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                  {userType === 'veteran' && (
-                    <Link
-                      to="/veteran-dashboard"
-                      className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      Dashboard
-                    </Link>
-                  )}
-                </>
-              )}
+    <nav className="bg-gradient-to-r from-green-800 to-orange-600 text-white p-4 shadow-lg">
+      <div className="container mx-auto flex justify-between items-center">
+        <div className="flex items-center space-x-8">
+          <Link to={`/${userData.userType}-dashboard`} className="flex items-center space-x-2">
+            <Shield className="h-8 w-8" />
+            <h1 className="text-2xl font-bold">Jawansethu</h1>
+          </Link>
+          
+          <div className="flex items-center space-x-6">
+            <Link to="/jobs" className="flex items-center space-x-2 hover:text-gray-200">
+              <Briefcase className="h-5 w-5" />
+              <span>Jobs</span>
+            </Link>
+            
+            <Link to="/learning" className="flex items-center space-x-2 hover:text-gray-200">
+              <Book className="h-5 w-5" />
+              <span>Learning Hub</span>
+            </Link>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <div className="text-sm">
+            <div className="font-semibold">{userData.name}</div>
+            <div className="text-xs opacity-90">
+              {userData.userType === 'veteran' ? userData.branch : userData.company}
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {userData ? (
-              <button
-                onClick={onLogout}
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Sign out
-              </button>
-            ) : (
-              <div className="flex space-x-4">
-                <Link
-                  to="/login"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/register"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  Sign up
-                </Link>
-              </div>
-            )}
-          </div>
+          <Link
+            to="/complete-profile"
+            className="px-4 py-2 bg-white bg-opacity-20 text-white rounded hover:bg-opacity-30 transition-colors"
+          >
+            Complete Profile
+          </Link>
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 bg-white text-green-800 rounded hover:bg-gray-100 transition-colors"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </nav>

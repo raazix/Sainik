@@ -8,7 +8,8 @@ const Register: React.FC = () => {
     name: '',
     email: '',
     password: '',
-    userType: 'veteran',
+    confirmPassword: '',
+    userType: 'veteran' as 'veteran' | 'employer',
     role: '',
     branch: '',
     service: '',
@@ -36,6 +37,12 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
@@ -49,7 +56,10 @@ const Register: React.FC = () => {
         languages: formData.languages.split(',').map((lang) => lang.trim()),
       };
 
-      const data = await authService.register(userData);
+      const data = await authService.register({
+        ...userData,
+        confirmPassword: formData.confirmPassword
+      });
       // Redirect based on user type
       if (data.userType === 'veteran') {
         navigate('/veteran-dashboard');
@@ -119,6 +129,21 @@ const Register: React.FC = () => {
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                id="confirmPassword"
+                required
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={formData.confirmPassword}
                 onChange={handleChange}
               />
             </div>

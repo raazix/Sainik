@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Home from './components/Home';
 import Footer from './components/common/Footer';
@@ -7,10 +7,15 @@ import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import VeteranDashboard from './components/veteran/VeteranDashboard';
 import EmployerDashboard from './components/employer/EmployerDashboard';
-import JobListings from './components/jobs/JobListings';
+import Jobs from './components/jobs/Jobs';
 import JobDetails from './components/jobs/JobDetails';
 import Profile from './components/profile/Profile';
 import { UserData } from './types';
+import { authService } from './services/api';
+import Loading from './components/common/Loading';
+import Courses from './pages/Courses';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import ProfileCompletion from './components/profile/ProfileCompletion';
 
 // Mock data
 const mockVeteranProfiles = [
@@ -165,96 +170,134 @@ const mockMentors = [
 
 type UserType = 'veteran' | 'employer';
 
-const App: React.FC = () => {
-  const [userType, setUserType] = useState<UserType | null>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
+// Create a wrapper component to use hooks
+const AppContent: React.FC = () => {
+  const navigate = useNavigate();
+  const [userType, setUserType] = useState<'veteran' | 'employer' | null>(() => {
+    return localStorage.getItem('userType') as 'veteran' | 'employer' | null;
+  });
+  
+  const [userData, setUserData] = useState<UserData | null>(() => {
+    const savedData = localStorage.getItem('userData');
+    return savedData ? JSON.parse(savedData) : null;
+  });
+  
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Check for stored authentication data on component mount
-    const storedUserType = localStorage.getItem('userType') as UserType | null;
-    const storedUserData = localStorage.getItem('userData');
-    
-    if (storedUserType && storedUserData) {
-      setUserType(storedUserType);
-      setUserData(JSON.parse(storedUserData));
-    }
-  }, []);
+  const isProfileComplete = (data: UserData) => {
+    const requiredFields = data.userType === 'veteran'
+      ? ['name', 'branch', 'service', 'education', 'skills']
+      : ['name', 'company', 'position'];
 
-  const handleLogout = () => {
-    localStorage.removeItem('userType');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('token');
-    setUserType(null);
-    setUserData(null);
+    return requiredFields.every(field => data[field as keyof UserData]);
   };
 
+  const handleLoginSuccess = (type: 'veteran' | 'employer', data: UserData) => {
+    setUserType(type);
+    setUserData(data);
+    localStorage.setItem('userType', type);
+    localStorage.setItem('userData', JSON.stringify(data));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('profileData');
+    setUserType(null);
+    setUserData(null);
+    navigate('/'); // Redirect to home page after logout
+  };
+
+  const handleProfileComplete = (updatedData: UserData) => {
+    setUserData(updatedData);
+    localStorage.setItem('userData', JSON.stringify(updatedData));
+  };
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {userData && <Navbar userData={userData} onLogout={handleLogout} />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={!userData ? <Home /> : <Navigate to={`/${userType}-dashboard`} />} />
+          <Route path="/login" element={!userData ? <Login onLoginSuccess={handleLoginSuccess} /> : <Navigate to={`/${userType}-dashboard`} />} />
+          <Route path="/register" element={!userData ? <Register onRegisterSuccess={handleLoginSuccess} /> : <Navigate to={`/${userType}-dashboard`} />} />
+          
+          {/* Protected Routes */}
+          <Route
+            path="/veteran-dashboard"
+            element={
+              userData?.userType === 'veteran' ? (
+                <VeteranDashboard userData={userData} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          
+          <Route
+            path="/employer-dashboard"
+            element={
+              userData?.userType === 'employer' ? (
+                <EmployerDashboard userData={userData} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+          
+          <Route
+            path="/jobs"
+            element={
+              userData ? <Jobs /> : <Navigate to="/login" />
+            }
+          />
+          
+          <Route
+            path="/jobs/:id"
+            element={
+              userData ? <JobDetails /> : <Navigate to="/login" />
+            }
+          />
+          
+          <Route
+            path="/profile"
+            element={
+              userData ? <Profile userData={userData} /> : <Navigate to="/login" />
+            }
+          />
+          
+          <Route
+            path="/complete-profile"
+            element={
+              userData ? <ProfileCompletion userData={userData} /> : <Navigate to="/login" />
+            }
+          />
+          
+          <Route 
+            path="/learning" 
+            element={
+              <ProtectedRoute>
+                <Courses userData={userData} />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+// Main App component
+const App: React.FC = () => {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar 
-          userType={userType || 'veteran'} 
-          userData={userData} 
-          onLogout={handleLogout} 
-        />
-        <main className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route 
-              path="/login" 
-              element={
-                !userData ? (
-                  <Login />
-                ) : (
-                  <Navigate to={userType === 'veteran' ? '/veteran-dashboard' : '/employer-dashboard'} />
-                )
-              } 
-            />
-            <Route 
-              path="/register" 
-              element={
-                !userData ? (
-                  <Register />
-                ) : (
-                  <Navigate to={userType === 'veteran' ? '/veteran-dashboard' : '/employer-dashboard'} />
-                )
-              } 
-            />
-            <Route 
-              path="/veteran-dashboard" 
-              element={
-                userData && userType === 'veteran' ? (
-                  <VeteranDashboard userData={userData} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              } 
-            />
-            <Route 
-              path="/employer-dashboard" 
-              element={
-                userData && userType === 'employer' ? (
-                  <EmployerDashboard userData={userData} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              } 
-            />
-            <Route path="/jobs" element={<JobListings />} />
-            <Route path="/jobs/:id" element={<JobDetails />} />
-            <Route 
-              path="/profile" 
-              element={
-                userData ? (
-                  <Profile userData={userData} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              } 
-            />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AppContent />
     </Router>
   );
 };

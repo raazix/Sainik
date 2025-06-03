@@ -3,19 +3,13 @@ import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  userType: 'veteran' | 'employer';
-  isAuthenticated: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, userType, isAuthenticated }) => {
-  const currentUserType = localStorage.getItem('userType') as 'veteran' | 'employer';
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('userData') !== null;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (currentUserType !== userType) {
-    return <Navigate to={currentUserType === 'veteran' ? '/veteran' : '/employer/dashboard'} replace />;
+    return <Navigate to="/login" />;
   }
 
   return <>{children}</>;

@@ -24,7 +24,10 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const data = await authService.login(formData.email, formData.password);
+      const data = await authService.login({
+        email: formData.email,
+        password: formData.password
+      });
       // Redirect based on user type
       if (data.userType === 'veteran') {
         navigate('/veteran-dashboard');

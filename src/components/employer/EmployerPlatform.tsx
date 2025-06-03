@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { UserData } from '../../types';
 import PostJob from './PostJob';
 import Analytics from './Analytics';
-import JobListings from './JobListings';
-import Applications from './Applications';
-import Profile from './Profile';
+import JobListings from '../jobs/JobListings';
+import Applications from '../common/Applications';
+import Profile from '../profile/Profile';
 
 interface EmployerPlatformProps {
   userData: UserData;
@@ -64,12 +64,12 @@ const EmployerPlatform: React.FC<EmployerPlatformProps> = ({ userData }) => {
             {activeTab === 'dashboard' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h2>
-                <Analytics />
-                <JobListings />
+                <Analytics userData={userData} />
+                <JobListings userData={userData} />
               </div>
             )}
-            {activeTab === 'post-job' && <PostJob />}
-            {activeTab === 'applications' && <Applications />}
+            {activeTab === 'post-job' && <PostJob userData={userData} />}
+            {activeTab === 'applications' && <Applications userData={userData} />}
             {activeTab === 'profile' && <Profile userData={userData} />}
           </div>
         </div>

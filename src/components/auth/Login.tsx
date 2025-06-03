@@ -2,26 +2,34 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 import { authService } from '../../services/api';
+import { UserData } from '../../types';
+
+interface LoginProps {
+  onLoginSuccess: (userType: 'veteran' | 'employer', userData: UserData) => void;
+}
 
 interface LoginFormData {
   email: string;
   password: string;
+  userType: 'veteran' | 'employer';
 }
 
-const Login: React.FC = () => {
+const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
+    userType: 'veteran'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     });
+    if (error) setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,19 +40,32 @@ const Login: React.FC = () => {
     try {
       const response = await authService.login(formData);
       
-      // Store the token and user data
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userData', JSON.stringify(response.userData));
-      localStorage.setItem('userType', response.userType);
+      if (!response || !response.token || !response.userType || !response.userData) {
+        throw new Error('Invalid response from server');
+      }
 
-      // Redirect based on user type
+      onLoginSuccess(response.userType, response.userData);
+
       if (response.userType === 'veteran') {
         navigate('/veteran-dashboard');
-      } else {
+      } else if (response.userType === 'employer') {
         navigate('/employer-dashboard');
+      } else {
+        throw new Error('Invalid user type received');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred during login');
+      if (err.response?.status === 401) {
+        setError('Invalid email, password, or user type');
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('An error occurred during login. Please try again.');
+      }
+      
+      setFormData({
+        ...formData,
+        password: ''
+      });
     } finally {
       setLoading(false);
     }
@@ -57,12 +78,10 @@ const Login: React.FC = () => {
           <div className="flex justify-center">
             <Shield className="h-12 w-12 text-green-600" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Welcome back to Jawansethu
-          </p>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Welcome to Jawansethu</h2>
+            <p className="mt-2 text-gray-600">Sign in to continue your journey</p>
+          </div>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -74,33 +93,42 @@ const Login: React.FC = () => {
 
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
+              <label htmlFor="userType" className="sr-only">User Type</label>
+              <select
+                id="userType"
+                name="userType"
+                value={formData.userType}
+                onChange={handleChange}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+              >
+                <option value="veteran">Veteran</option>
+                <option value="employer">Employer</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="email" className="sr-only">Email address</label>
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="password" className="sr-only">Password</label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                placeholder="Password"
               />
             </div>
           </div>

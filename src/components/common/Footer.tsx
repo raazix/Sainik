@@ -1,12 +1,13 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-800 text-white p-6 mt-12">
-      <div className="container mx-auto">
+    <footer className="bg-gray-800 text-white py-12">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div>
-            <h3 className="font-semibold mb-3">Jawansethu India</h3>
+            <h3 className="font-semibold mb-3">Jawansethu</h3>
             <p className="text-sm text-gray-400">Empowering veterans through technology and community support.</p>
           </div>
           <div>
@@ -38,7 +39,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="border-t border-gray-700 mt-6 pt-6 text-center text-sm text-gray-400">
-          <p>&copy; 2024 Jawansethu India. Proudly supporting our nation's heroes.</p>
+          <p>&copy; 2024 Jawansethu. Proudly supporting our nation's heroes.</p>
         </div>
       </div>
     </footer>

@@ -8,6 +8,8 @@ const veteranProfiles = [
     id: 1,
     name: 'John Doe',
     rank: 'Major',
+    role: 'Project Manager',
+    branch: 'Indian Army',
     service: 'Indian Army',
     yearsOfService: 15,
     skills: ['Leadership', 'Project Management', 'Strategic Planning'],
@@ -20,6 +22,7 @@ const veteranProfiles = [
     preferredRoles: ['Project Manager', 'Operations Manager', 'Consultant'],
     languages: ['English', 'Hindi'],
     achievements: ['Distinguished Service Medal', 'Leadership Excellence Award'],
+    matchScore: 95,
     contact: {
       email: 'john.doe@example.com',
       phone: '+91 9876543210',
@@ -88,6 +91,32 @@ const courses = [
     recommended: true
   }
 ];
+
+interface VeteranProfile {
+  id: number;
+  name: string;
+  rank: string;
+  role: string;
+  branch: string;
+  service: string;
+  yearsOfService: number;
+  skills: string[];
+  experience: string;
+  education: string;
+  certifications: string[];
+  interests: string[];
+  location: string;
+  availability: string;
+  preferredRoles: string[];
+  languages: string[];
+  achievements: string[];
+  matchScore?: number;
+  contact: {
+    email: string;
+    phone: string;
+    linkedin: string;
+  };
+}
 
 interface VeteranPlatformProps {
   userData: UserData;

@@ -13,7 +13,6 @@ export interface IUser extends Document {
   company?: string;
   position?: string;
   physicalStatus?: string;
-  education?: string;
   skills?: string[];
   achievements?: string[];
   certifications?: string[];
@@ -55,13 +54,37 @@ const userSchema = new Schema<IUser>(
       required: [true, 'Please specify user type'],
       enum: ['veteran', 'employer'],
     },
-    branch: String,
-    service: String,
-    company: String,
-    position: String,
+    branch: {
+      type: String,
+      required: function(this: IUser) {
+        return this.userType === 'veteran';
+      }
+    },
+    service: {
+      type: String,
+      required: function(this: IUser) {
+        return this.userType === 'veteran';
+      }
+    },
+    company: {
+      type: String,
+      required: function(this: IUser) {
+        return this.userType === 'employer';
+      }
+    },
+    position: {
+      type: String,
+      required: function(this: IUser) {
+        return this.userType === 'employer';
+      }
+    },
     physicalStatus: String,
-    education: String,
-    skills: [String],
+    skills: {
+      type: [String],
+      required: function(this: IUser) {
+        return this.userType === 'veteran';
+      }
+    },
     achievements: [String],
     certifications: [String],
     languages: [String],

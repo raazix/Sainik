@@ -9,7 +9,7 @@ export interface UserData {
   company?: string;
   position?: string;
   physicalStatus?: string;
-  education?: string;
+  education?: string | string[];
   skills?: string[];
   achievements?: string[];
   certifications?: string[];
